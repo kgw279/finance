@@ -115,8 +115,8 @@
         /* REPLACE THESE WITH YOUR ACTUAL GOOGLE CLOUD CREDENTIALS 
            Create them at: https://console.cloud.google.com/
         */
-        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
-        const API_KEY = 'YOUR_API_KEY';
+        const CLIENT_ID = '323221869326-en1936d6cg90qcmmm1gp2rpoo7tu50ak.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyDte0cZEz2KjHVKFnKn6qQfLAhgvYFoqdg';
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
         let tokenClient;
