@@ -137,7 +137,7 @@ function analyzeBudgetData(headers, rows) {
 
     const valueForGrouping = actual ?? amount ?? budget ?? remaining ?? 0;
 
-    if (type.includes("income") || (valueForGrouping > 0 && category.toLowerCase().includes("salary"))) {
+    if (type.includes("income") || valueForGrouping > 0 && category.toLowerCase().includes("salary")) {
       income += valueForGrouping;
     } else if (type.includes("expense")) {
       expenses += Math.abs(valueForGrouping);
@@ -153,9 +153,7 @@ function analyzeBudgetData(headers, rows) {
     categoryMap.set(category, existing + Math.abs(valueForGrouping));
   });
 
-  const derivedRemaining =
-    remainingTotal || (budgetTotal && actualTotal ? budgetTotal - actualTotal : income - expenses);
-
+  const derivedRemaining = remainingTotal || (budgetTotal && actualTotal ? budgetTotal - actualTotal : income - expenses);
   const net = income - expenses;
 
   const categoryTotals = Array.from(categoryMap.entries())
@@ -303,6 +301,6 @@ function escapeHtml(value) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
