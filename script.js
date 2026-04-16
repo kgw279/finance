@@ -1,4 +1,7 @@
 const SHEET_NAME = "main_dash";
+  el.summaryCards.innerHTML = cards
+    .map(
+      (card) => `
         <article class="summary-card">
           <div class="label">${escapeHtml(card.label)}</div>
           <div class="value ${card.className}">${escapeHtml(card.value)}</div>
