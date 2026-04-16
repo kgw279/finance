@@ -3,292 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Finance Dashboard</title>
+    <title>FinanceFlow | Personal Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- Import Configuration -->
+    <script src="config.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .chart-container { position: relative; height: 300px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
-    <div class="flex flex-col lg:flex-row min-h-screen">
-        <!-- Sidebar Navigation -->
-        <nav class="w-full lg:w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-8">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-600 p-2 rounded-xl text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-slate-800 tracking-tight">VaultBuddy</span>
-            </div>
+<body class="gradient-bg min-h-screen font-sans text-gray-900">
 
-            <div class="flex flex-col gap-2">
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu</p>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-xl bg-indigo-50 text-indigo-700 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
-                    Dashboard
-                </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" /></svg>
-                    Transactions
-                </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd" /></svg>
-                    Bill Planner
-                </a>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-900">FinanceFlow</h1>
+                <p class="text-gray-600">Real-time Google Sheets Insights</p>
             </div>
-
-            <div class="mt-auto bg-slate-900 rounded-2xl p-4 text-white">
-                <p class="text-xs text-slate-400 mb-1">Current Balance</p>
-                <h4 class="text-lg font-bold mb-4">$12,680.00</h4>
-                <button class="w-full py-2 bg-white text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors">Add Funds</button>
+            
+            <div class="flex gap-3">
+                <button id="auth_button" onclick="handleAuthClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md">
+                    Connect Google Account
+                </button>
+                <button id="signout_button" onclick="handleSignoutClick()" class="hidden bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-lg font-medium transition">
+                    Sign Out
+                </button>
             </div>
-        </nav>
+        </header>
 
-        <!-- Main Content -->
-        <main class="flex-grow p-4 lg:p-8 overflow-y-auto custom-scrollbar">
-            <!-- Header -->
-            <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <!-- Configuration Modal -->
+        <div id="setup_section" class="glass-card p-6 rounded-2xl mb-8 shadow-sm border-l-4 border-indigo-500">
+            <h2 class="text-lg font-semibold mb-2 text-indigo-900">1. Setup Spreadsheet Sync</h2>
+            <p class="text-sm text-gray-600 mb-4 font-mono bg-indigo-50 p-2 rounded">
+                URL: https://docs.google.com/spreadsheets/d/<span class="text-indigo-600 font-bold">SPREADSHEET_ID</span>/edit
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Good Morning, Craig</h1>
-                    <p class="text-slate-500">Here's your budget summary for March 2024.</p>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">SPREADSHEET ID</label>
+                    <input type="text" id="spreadsheet_id" placeholder="Paste ID from URL" class="w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-300 outline-none">
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
-                        <button class="px-4 py-1.5 text-sm font-medium bg-slate-900 text-white rounded-lg">Overview</button>
-                        <button class="px-4 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-800">Forecast</button>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">DATA RANGE (SheetName!A:E)</label>
+                    <input type="text" id="range_input" placeholder="e.g. Transactions!A1:E100" class="w-full border p-2 rounded-md focus:ring-2 focus:ring-indigo-300 outline-none">
                 </div>
-            </header>
+                <div class="flex items-end">
+                    <button onclick="fetchData()" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition shadow-sm">
+                        Sync Live Data
+                    </button>
+                </div>
+            </div>
+        </div>
 
-            <!-- Metric Cards -->
+        <!-- Dashboard Grid -->
+        <main id="dashboard" class="hidden">
+            <!-- Stats Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="bg-emerald-100 p-2.5 rounded-xl text-emerald-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                            </svg>
-                        </div>
-                        <span class="text-sm font-semibold text-slate-500">Monthly Income</span>
-                    </div>
-                    <h2 class="text-3xl font-bold text-slate-900">$12,625.00</h2>
-                    <p class="text-xs text-emerald-600 font-medium mt-1">+4.2% from last month</p>
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Total Income</p>
+                    <h3 id="total_income" class="text-3xl font-bold text-green-600">$0.00</h3>
                 </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="bg-rose-100 p-2.5 rounded-xl text-rose-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                            </svg>
-                        </div>
-                        <span class="text-sm font-semibold text-slate-500">Total Expenses</span>
-                    </div>
-                    <h2 class="text-3xl font-bold text-slate-900">$8,941.75</h2>
-                    <p class="text-xs text-rose-600 font-medium mt-1">-1.5% below budget</p>
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Total Expenses</p>
+                    <h3 id="total_expenses" class="text-3xl font-bold text-red-600">$0.00</h3>
                 </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="bg-indigo-100 p-2.5 rounded-xl text-indigo-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                        </div>
-                        <span class="text-sm font-semibold text-slate-500">Savings Rate</span>
-                    </div>
-                    <h2 class="text-3xl font-bold text-slate-900">29.1%</h2>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: 29.1%"></div>
-                    </div>
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Net Savings</p>
+                    <h3 id="net_savings" class="text-3xl font-bold text-indigo-600">$0.00</h3>
                 </div>
             </div>
 
-            <!-- Main Dashboard Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Trend Chart -->
-                <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <h3 class="font-bold text-slate-800 text-lg">Income vs Expenses</h3>
-                        <select class="text-sm bg-slate-50 border-none rounded-lg p-2 outline-none">
-                            <option>Last 6 Months</option>
-                            <option>Full Year</option>
-                        </select>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Category Pie -->
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
-                    <h3 class="font-bold text-slate-800 text-lg mb-8">Spending by Category</h3>
-                    <div class="flex-grow flex items-center justify-center">
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass-card p-6 rounded-2xl shadow-sm min-h-[400px]">
+                    <h4 class="text-lg font-semibold mb-4">Spending by Category</h4>
+                    <div class="relative h-64">
                         <canvas id="categoryChart"></canvas>
                     </div>
-                    <div id="categoryLegend" class="mt-6 space-y-3">
-                        <!-- Legend items injected by JS -->
+                </div>
+                <div class="glass-card p-6 rounded-2xl shadow-sm min-h-[400px]">
+                    <h4 class="text-lg font-semibold mb-4">Recent Spending Trend</h4>
+                    <div class="relative h-64">
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Transaction Log -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 class="font-bold text-slate-800 text-lg">Recent Transactions</h3>
-                    <div class="relative w-full md:w-64">
-                        <input type="text" placeholder="Search logs..." class="w-full bg-slate-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </div>
+            <!-- Data Table -->
+            <div class="glass-card rounded-2xl shadow-sm overflow-hidden mb-10">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                    <h4 class="text-lg font-semibold">Spreadsheet Detail</h4>
+                    <span id="row_count" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 uppercase font-bold">0 records</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
-                            <tr>
-                                <th class="px-6 py-4">Date</th>
-                                <th class="px-6 py-4">Location</th>
-                                <th class="px-6 py-4">Category</th>
-                                <th class="px-6 py-4 text-right">Amount</th>
-                            </tr>
+                        <thead class="bg-gray-50">
+                            <tr id="table_headers"></tr>
                         </thead>
-                        <tbody id="transactionTable" class="divide-y divide-slate-50">
-                            <!-- Rows injected by JS -->
-                        </tbody>
+                        <tbody id="table_body" class="divide-y divide-gray-100 text-sm"></tbody>
                     </table>
-                </div>
-                <div class="p-4 text-center">
-                    <button class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">View Full Transaction History</button>
                 </div>
             </div>
         </main>
+        
+        <div id="empty_state" class="text-center py-20">
+            <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <h2 class="text-xl font-medium text-gray-600">Secure Authentication Required</h2>
+            <p class="text-gray-400 max-w-sm mx-auto">Please click 'Connect' to securely link your Google Sheets data to this analytics dashboard.</p>
+        </div>
     </div>
 
     <script>
-        // Real data extracted from user's CSV patterns
-        const transactions = [
-            { date: 'Mar 31', location: 'CHATBOOKS, INC.', category: 'Unplanned', amount: -16.10 },
-            { date: 'Mar 30', location: 'Spotify', category: 'Spotify', amount: -23.63 },
-            { date: 'Mar 28', location: 'CHUBBYS CAFE PAYSON', category: 'Fast Food', amount: -24.67 },
-            { date: 'Mar 28', location: "MACEY'S", category: 'Groceries', amount: -35.12 },
-            { date: 'Mar 15', location: 'SALARY DEPOSIT', category: 'Income', amount: 6337.50 },
-            { date: 'Mar 01', location: 'UCCU MORTGAGE', category: 'Mortgage', amount: -2867.00 },
-            { date: 'Mar 01', location: 'SALARY DEPOSIT', category: 'Income', amount: 6337.50 }
-        ];
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        let categoryChart, trendChart;
 
-        const categoryData = {
-            'Mortgage': 2867,
-            'Groceries': 1400,
-            'Fast Food': 150,
-            'Utilities': 289,
-            'Unplanned': 500,
-            'Savings': 383
-        };
-
-        const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#f43f5e', '#64748b'];
-
-        // Initialize UI
-        window.onload = () => {
-            renderTransactions();
-            initCharts();
-        };
-
-        function renderTransactions() {
-            const tbody = document.getElementById('transactionTable');
-            tbody.innerHTML = transactions.map(t => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-6 py-4 text-sm text-slate-500 font-medium">${t.date}</td>
-                    <td class="px-6 py-4 text-sm text-slate-800 font-bold">${t.location}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase tracking-tight">
-                            ${t.category}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right text-sm font-bold ${t.amount > 0 ? 'text-emerald-600' : 'text-slate-900'}">
-                        ${t.amount > 0 ? '+' : ''}${t.amount.toLocaleString('en-US', {style: 'currency', currency: 'USD'})}
-                    </td>
-                </tr>
-            `).join('');
+        // Load Google API and Identity Services
+        function gapiLoaded() {
+            gapi.load('client', intializeGapiClient);
         }
 
-        function initCharts() {
-            // Main Chart (Line)
-            const mainCtx = document.getElementById('mainChart').getContext('2d');
-            new Chart(mainCtx, {
-                type: 'line',
+        async function intializeGapiClient() {
+            await gapi.client.init({
+                apiKey: CONFIG.API_KEY,
+                discoveryDocs: CONFIG.DISCOVERY_DOCS,
+            });
+            gapiInited = true;
+            checkReady();
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CONFIG.CLIENT_ID,
+                scope: CONFIG.SCOPES,
+                callback: '', 
+            });
+            gisInited = true;
+            checkReady();
+        }
+
+        function checkReady() {
+            if (gapiInited && gisInited) {
+                document.getElementById('auth_button').style.display = 'block';
+            }
+        }
+
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) throw (resp);
+                document.getElementById('auth_button').classList.add('hidden');
+                document.getElementById('signout_button').classList.remove('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('empty_state').classList.add('hidden');
+                showToast("Connected to Google Sheets API");
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                location.reload(); 
+            }
+        }
+
+        async function fetchData() {
+            const spreadsheetId = document.getElementById('spreadsheet_id').value.trim();
+            const range = document.getElementById('range_input').value.trim() || 'Sheet1!A1:E100';
+
+            if (!spreadsheetId) {
+                showToast("❌ Missing Spreadsheet ID");
+                return;
+            }
+
+            if (gapi.client.getToken() === null) {
+                showToast("⚠️ Authentication required.");
+                return;
+            }
+
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: spreadsheetId,
+                    range: range,
+                });
+                const rangeData = response.result.values;
+                if (!rangeData || rangeData.length === 0) {
+                    showToast("No data found in range.");
+                    return;
+                }
+                processFinancialData(rangeData);
+                showToast("✅ Data Synced Successfully");
+            } catch (err) {
+                console.error(err);
+                showToast("Sync Error: Check ID or Sheet permissions.");
+            }
+        }
+
+        function processFinancialData(rows) {
+            const headers = rows[0];
+            const data = rows.slice(1);
+            document.getElementById('row_count').innerText = `${data.length} records`;
+
+            // Table rendering
+            const headerRow = document.getElementById('table_headers');
+            headerRow.innerHTML = headers.map(h => `<th class="px-6 py-3 font-bold text-gray-500 uppercase text-xs tracking-wider">${h}</th>`).join('');
+
+            const body = document.getElementById('table_body');
+            body.innerHTML = data.map(row => `
+                <tr class="hover:bg-indigo-50/40 transition-colors">
+                    ${row.map(cell => `<td class="px-6 py-3 border-t border-gray-100">${cell}</td>`).join('')}
+                </tr>
+            `).join('');
+
+            // Analytics logic
+            let income = 0;
+            let expenses = 0;
+            const categories = {};
+
+            data.forEach(row => {
+                const rawAmount = row[3] ? row[3].toString().replace(/[^0-9.-]+/g,"") : "0";
+                const amount = parseFloat(rawAmount) || 0;
+                const type = row[4] ? row[4].toLowerCase().trim() : 'expense';
+                const cat = row[1] || 'Other';
+
+                if (type === 'income') {
+                    income += amount;
+                } else {
+                    expenses += amount;
+                    categories[cat] = (categories[cat] || 0) + amount;
+                }
+            });
+
+            const currencyFormat = { style: 'currency', currency: 'USD' };
+            document.getElementById('total_income').innerText = income.toLocaleString('en-US', currencyFormat);
+            document.getElementById('total_expenses').innerText = expenses.toLocaleString('en-US', currencyFormat);
+            document.getElementById('net_savings').innerText = (income - expenses).toLocaleString('en-US', currencyFormat);
+
+            renderCharts(categories, data);
+        }
+
+        function renderCharts(categories, allData) {
+            // Doughnut Chart
+            if (categoryChart) categoryChart.destroy();
+            const ctx1 = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctx1, {
+                type: 'doughnut',
                 data: {
-                    labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-                    datasets: [
-                        {
-                            label: 'Income',
-                            data: [10200, 10240, 10227, 10550, 10550, 12625],
-                            borderColor: '#4f46e5',
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            borderWidth: 3,
-                            pointRadius: 4
-                        },
-                        {
-                            label: 'Expenses',
-                            data: [7800, 8100, 9200, 8500, 8900, 8941],
-                            borderColor: '#cbd5e1',
-                            borderDash: [5, 5],
-                            tension: 0.4,
-                            fill: false,
-                            borderWidth: 2
-                        }
-                    ]
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        data: Object.values(categories),
+                        backgroundColor: ['#6366f1', '#4f46e5', '#4338ca', '#818cf8', '#a5b4fc', '#c7d2fe'],
+                        borderWidth: 0,
+                    }]
                 },
-                options: {
-                    responsive: true,
+                options: { 
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                    cutout: '65%',
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } }
+                }
+            });
+
+            // Trend Chart
+            if (trendChart) trendChart.destroy();
+            const ctx2 = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: allData.slice(-10).map(r => r[0] || 'N/A'),
+                    datasets: [{
+                        label: 'Amount',
+                        data: allData.slice(-10).map(r => parseFloat(r[3].toString().replace(/[^0-9.-]+/g,"")) || 0),
+                        backgroundColor: '#indigo',
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderRadius: 8
+                    }]
+                },
+                options: { 
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { beginAtZero: true, grid: { display: false } },
                         x: { grid: { display: false } }
                     }
                 }
             });
-
-            // Category Chart (Doughnut)
-            const catCtx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(catCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(categoryData),
-                    datasets: [{
-                        data: Object.values(categoryData),
-                        backgroundColor: colors,
-                        hoverOffset: 15,
-                        borderWidth: 0,
-                        cutout: '75%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            // Legend injection
-            const legend = document.getElementById('categoryLegend');
-            legend.innerHTML = Object.keys(categoryData).map((key, i) => `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full" style="background-color: ${colors[i]}"></div>
-                        <span class="text-xs font-semibold text-slate-600 uppercase tracking-tight">${key}</span>
-                    </div>
-                    <span class="text-xs font-bold text-slate-800">$${categoryData[key].toLocaleString()}</span>
-                </div>
-            `).join('');
         }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-indigo-900 text-white px-6 py-3 rounded-xl shadow-2xl z-50 transition-all duration-300 transform translate-y-0 flex items-center gap-3";
+            toast.innerHTML = `<span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { 
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300); 
+            }, 3500);
+        }
+
+        window.onload = () => {
+            gapiLoaded();
+            gisLoaded();
+        };
     </script>
 </body>
 </html>
