@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow | Personal Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-sans text-gray-900">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-900">FinanceFlow</h1>
+                <p class="text-gray-600">Real-time Google Sheets Insights</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button id="auth_button" onclick="handleAuthClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md">
+                    Connect Google Sheets
+                </button>
+                <button id="signout_button" onclick="handleSignoutClick()" class="hidden bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-lg font-medium transition">
+                    Sign Out
+                </button>
+            </div>
+        </header>
+
+        <!-- Configuration Modal (For Demo/Setup) -->
+        <div id="setup_section" class="glass-card p-6 rounded-2xl mb-8 shadow-sm border-l-4 border-indigo-500">
+            <h2 class="text-lg font-semibold mb-4">Sheet Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="spreadsheet_id" placeholder="Spreadsheet ID" class="border p-2 rounded-md focus:ring-2 focus:ring-indigo-300 outline-none">
+                <input type="text" id="range_input" placeholder="Sheet Name!A1:E20" class="border p-2 rounded-md focus:ring-2 focus:ring-indigo-300 outline-none">
+                <button onclick="fetchData()" class="bg-indigo-100 text-indigo-700 font-semibold py-2 px-4 rounded-md hover:bg-indigo-200 transition">
+                    Sync Data
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Find your Spreadsheet ID in the URL: /d/[ID-HERE]/edit</p>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <main id="dashboard" class="hidden">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Total Income</p>
+                    <h3 id="total_income" class="text-3xl font-bold text-green-600">$0.00</h3>
+                </div>
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Total Expenses</p>
+                    <h3 id="total_expenses" class="text-3xl font-bold text-red-600">$0.00</h3>
+                </div>
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Net Savings</p>
+                    <h3 id="net_savings" class="text-3xl font-bold text-indigo-600">$0.00</h3>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="glass-card p-6 rounded-2xl shadow-sm h-96">
+                    <h4 class="text-lg font-semibold mb-4">Spending by Category</h4>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="glass-card p-6 rounded-2xl shadow-sm h-96">
+                    <h4 class="text-lg font-semibold mb-4">Monthly Trend</h4>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <h4 class="text-lg font-semibold">Transaction History</h4>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50">
+                            <tr id="table_headers">
+                                <!-- Headers injected here -->
+                            </tr>
+                        </thead>
+                        <tbody id="table_body" class="divide-y divide-gray-100">
+                            <!-- Data injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        
+        <div id="empty_state" class="text-center py-20">
+            <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <h2 class="text-xl font-medium text-gray-600">No data connected yet</h2>
+            <p class="text-gray-400">Sign in and enter your Spreadsheet ID to begin.</p>
+        </div>
+    </div>
+
+    <script>
+        /* REPLACE THESE WITH YOUR ACTUAL GOOGLE CLOUD CREDENTIALS 
+           Create them at: https://console.cloud.google.com/
+        */
+        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+        const API_KEY = 'YOUR_API_KEY';
+        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        let categoryChart, trendChart;
+
+        // Initialize GAPI and GIS
+        function gapiLoaded() {
+            gapi.load('client', intializeGapiClient);
+        }
+
+        async function intializeGapiClient() {
+            await gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+            });
+            gapiInited = true;
+            checkReady();
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // defined at runtime
+            });
+            gisInited = true;
+            checkReady();
+        }
+
+        function checkReady() {
+            if (gapiInited && gisInited) {
+                document.getElementById('auth_button').style.display = 'block';
+            }
+        }
+
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) throw (resp);
+                document.getElementById('auth_button').classList.add('hidden');
+                document.getElementById('signout_button').classList.remove('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('empty_state').classList.add('hidden');
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                document.getElementById('auth_button').classList.remove('hidden');
+                document.getElementById('signout_button').classList.add('hidden');
+                document.getElementById('dashboard').classList.add('hidden');
+                document.getElementById('empty_state').classList.remove('hidden');
+            }
+        }
+
+        async function fetchData() {
+            const spreadsheetId = document.getElementById('spreadsheet_id').value;
+            const range = document.getElementById('range_input').value || 'Sheet1!A1:E100';
+
+            if (!spreadsheetId) {
+                showToast("Please enter a Spreadsheet ID");
+                return;
+            }
+
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: spreadsheetId,
+                    range: range,
+                });
+                const rangeData = response.result.values;
+                if (!rangeData || rangeData.length === 0) {
+                    showToast("No data found.");
+                    return;
+                }
+                processFinancialData(rangeData);
+            } catch (err) {
+                showToast("Error fetching data: " + err.message);
+            }
+        }
+
+        function processFinancialData(rows) {
+            const headers = rows[0];
+            const data = rows.slice(1);
+
+            // Populate Headers
+            const headerRow = document.getElementById('table_headers');
+            headerRow.innerHTML = headers.map(h => `<th class="px-6 py-4 font-bold text-gray-600">${h}</th>`).join('');
+
+            // Populate Body
+            const body = document.getElementById('table_body');
+            body.innerHTML = data.map(row => `
+                <tr class="hover:bg-gray-50 transition">
+                    ${row.map(cell => `<td class="px-6 py-4 border-t border-gray-100">${cell}</td>`).join('')}
+                </tr>
+            `).join('');
+
+            // Simple logic assuming: Date (0), Category (1), Description (2), Amount (3), Type (4)
+            // Adjust indices based on your specific sheet layout
+            let income = 0;
+            let expenses = 0;
+            const categories = {};
+
+            data.forEach(row => {
+                const amount = parseFloat(row[3].replace(/[^0-9.-]+/g,"")) || 0;
+                const type = row[4]?.toLowerCase();
+                const cat = row[1] || 'Other';
+
+                if (type === 'income') {
+                    income += amount;
+                } else {
+                    expenses += amount;
+                    categories[cat] = (categories[cat] || 0) + amount;
+                }
+            });
+
+            // Update UI
+            document.getElementById('total_income').innerText = `$${income.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('total_expenses').innerText = `$${expenses.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('net_savings').innerText = `$${(income - expenses).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            renderCharts(categories, data);
+        }
+
+        function renderCharts(categories, allData) {
+            // Category Pie Chart
+            if (categoryChart) categoryChart.destroy();
+            const ctx1 = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        data: Object.values(categories),
+                        backgroundColor: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'],
+                    }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+
+            // Mock Trend Chart (Normally you'd group by Date)
+            if (trendChart) trendChart.destroy();
+            const ctx2 = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Expense Trend',
+                        data: [1200, 1900, 1500, 2100, 1800, 2400],
+                        borderColor: '#6366f1',
+                        tension: 0.3
+                    }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+        }
+
+        function showToast(msg) {
+            // Custom simplified toast logic
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-opacity duration-500";
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+        }
+
+        window.onload = () => {
+            gapiLoaded();
+            gisLoaded();
+        };
+    </script>
+</body>
+</html>
